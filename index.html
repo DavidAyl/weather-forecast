@@ -17,15 +17,43 @@
     <title class>What's The Weather</title>
   </head>
   <body>
-    <h1 class="text-center">Hello, world!</h1>
-    <div class="container"></div>
+    <h1 class="text-center bg-dark text-light">Weather Dashboard</h1>
+    <div class="bg-light">
+        <div class="container-fluid">
     <div class="row">
         <div class="col-3">
             <h2 class="text-center">Search for a City:</h2>
             <textarea class="col-12 m-2" placeholder="Chicago"></textarea>
-            <button class="col-12 m-2 h-25"></button>
+            <button class="col-12 m-2 h-25 btn btn-info">Search</button>
             <hr>
         </div>
+        <span class=" col-8 ml-5 border border-dark rounded-lg">
+        <div class="col-9">
+            <div class="jumbotron bg-light p-0">
+                <h1 class="display-4">City, Date</h1>
+                <p>Temp</p>
+                <p>Wind</p>
+                <p>Humidity</p>
+                <p>UV Index</p>
+              </div>
+            </span>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-3">
+                <h2 class="mt-3">
+                    Recently Searched
+                </h2>
+            </div>
+            <div class="col-9">
+                <h2 class="ml-4 mt-3">5-Day Forecast:</h2>
+                <div class="ml-4 mt-3">
+                    <p> Card 1 - 5 go here</p>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
     <script
       src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
