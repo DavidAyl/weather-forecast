@@ -1,9 +1,8 @@
-var apiKey = "9f0df682c222a2ec554b6d457b088d3d";
 
 containerEl = document.querySelector('container')
 containerEl.classList.add('row');
+var apiKey = "9f0df682c222a2ec554b6d457b088d3d";
 
-var API = 'dbadba3b6a415a81ba40263bf08007ee';
 var openCallWeatherUrl = 'https://api.openweathermap.org/data/2.5/onecall?';
 var geoCodeWeatherUrl = 'http://api.openweathermap.org/geo/1.0/direct?q=';
 
@@ -62,7 +61,7 @@ if (SearchCities) {
 }
 
 var getUrlName = function (city) {
-    var cityRequestUrl = geoCodeWeatherUrl + city + '&appid=' + API;
+    var cityRequestUrl = geoCodeWeatherUrl + city + '&appid=' + apiKey;
 
     fetch(cityRequestUrl)
         .then(function (response) {
@@ -80,18 +79,16 @@ var getUrlName = function (city) {
 
     console.log(cityRequestUrl);
 };
-var lat = weatherData[0].lat
-var lon = weatherData[0].lon
 
-var coordinateRequestUrl = openCallWeatherUrl + 'lat=' + lat + '&lon=' + lon + '&appid=' + API + '&units=imperial';
 var weatherDisplay = function (weatherData, searchTerm) {
     if (weatherData.length === 0) {
         mainEl.textContent = 'No data found';
         return;
     }
-
-
-
+    var coordinateRequestUrl = openCallWeatherUrl + 'lat=' + lat + '&lon=' + lon + '&appid=' + apiKey + '&units=imperial';
+    var lat = weatherData[0].lat
+    var lon = weatherData[0].lon
+    
     fetch(coordinateRequestUrl)
         .then(function (response) {
             return response.json();
@@ -109,10 +106,61 @@ var weatherDisplay = function (weatherData, searchTerm) {
             humidity.classList.add('test');
             currentWeatherEl.appendChild(humidity);
             humidity.textContent = 'Humidity: ' + data.current.humidity + '%';
-            var uvi = document.createElement('div');
-            uvi.classList.add('test');
-            currentWeatherEl.appendChild(uvi);
-            uvi.textContent = 'UV index: ' + data.current.uvi;
-        }
-        )
-}
+            var uvIndex = document.createElement('div');
+            uvIndex.classList.add('test');
+            currentWeatherEl.appendChild(uvIndex);
+            uvIndex.textContent = 'UV index: ' + data.current.uvi;
+            for (let i = 0; i < 5; i++) {
+
+                // date changed to momentum
+                var dtUnixFormatting = moment.unix(data.daily[i].dt).format('MMMM Do, YYYY');
+                var tempDay = data.daily[i].temp.day;
+                var windSpeed = data.daily[i].wind_speed;
+                var humidity = data.daily[i].humidity;
+                var weatherIcon = data.daily[i].weather[0].icon;
+                var weatherDescription = data.daily[i].weather[0].description
+                var iconSource = 'https://openweathermap.org/img/wn/' + weatherIcon + '@2x.png'
+                // console.log(data.daily[i].weather[0].icon)
+                // console.log(iconSource);
+
+                var card = document.createElement('div');
+                card.classList.add('card-body', 'm-3')
+                fiveDayForecastEl.appendChild(card);
+                console.log(card)
+
+                var dateEl = document.createElement('h5');
+                dateEl.classList.add('card-text');
+                card.appendChild(dateEl);
+                dateEl.textContent = dtUnixFormatting;
+
+                var iconEl = document.createElement('img');
+                iconEl.src = iconSource;
+                iconEl.alt = weatherDescription;
+                iconEl.title = weatherDescription;
+                iconEl.classList.add('d-block')
+                card.appendChild(iconEl);
+
+
+                var tempEl = document.createElement('p');
+                tempEl.classList.add('card-text', 'lh-lg');
+                card.appendChild(tempEl);
+                tempEl.textContent = 'Temp: ' + tempDay;
+
+                var windSpeedEl = document.createElement('p');
+                windSpeedEl.classList.add('card-text', 'lh-lg');
+                card.appendChild(windSpeedEl);
+                windSpeedEl.textContent = 'Wind: '+ windSpeed + ' mph';
+
+                var humidityEl = document.createElement('p');
+                humidityEl.classList.add('card-text', 'lh-lg');
+                card.appendChild(humidityEl);
+                humidityEl.textContent = 'Humidity: ' + humidity + '%';
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+    return;
+};
+    
+searchBtn.addEventListener('click', searchHandler);
