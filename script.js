@@ -1,6 +1,7 @@
 
 containerEl = document.querySelector('container')
 containerEl.classList.add('row');
+
 var apiKey = "9f0df682c222a2ec554b6d457b088d3d";
 
 var openCallWeatherUrl = 'https://api.openweathermap.org/data/2.5/onecall?';
@@ -12,22 +13,22 @@ containerEl.appendChild(header);
 header.textContent = "Weather";
 
 var asideEl = document.createElement('aside');
-asideEl.classList.add('col-3', 'h5', 'py-5');
+asideEl.classList.add('col-3', 'h5');
 containerEl.appendChild(asideEl);
 
 var mainEl = document.createElement('main');
-mainEl.classList.add('col-8', 'margin-main');
+mainEl.classList.add('col-8', 'row', 'flex-row');
 containerEl.appendChild(mainEl);
 
 var currentWeatherEl = document.createElement('div')
-currentWeatherEl.classList.add('title', 'col-12','py-5', 'h2');
+currentWeatherEl.classList.add('title', 'col-12', 'py-5', 'h2');
 mainEl.appendChild(currentWeatherEl);
 
 
-var fiveDayForecastEl = document.createElement('div');
-fiveDayForecastEl.classList.add('col-12', 'h3');
-fiveDayForecastEl.style.width = '8-rem;'
-mainEl.appendChild(fiveDayForecastEl);
+var fiveDayEl = document.createElement('div');
+fiveDayEl.classList.add('col-12', 'h3');
+fiveDayEl.style.width = '8-rem;'
+mainEl.appendChild(fiveDayEl);
 
 
 var searchEl = document.createElement('div');
@@ -42,27 +43,50 @@ searchEl.appendChild(cityInput);
 
 var searchBtn = document.createElement('button');
 searchBtn.textContent = 'Search';
-searchBtn.classList.add('col-12','btn', 'btn-lg', 'btn-outline-secondary', 'px-5')
+searchBtn.classList.add('col-12', 'btn', 'btn-lg', 'btn-outline-secondary', 'px-5')
 searchBtn.type = 'button'
 searchEl.appendChild(searchBtn);
 
-var SearchCities = cityInput.value
+var displayHistory = cityInput.value;
+
+
+var city = localStorage.getItem('city')
+if (city) {
+    displayHistory = JSON.parse(city);
+
+    for (let i = 0; i < displayHistory.length; i++) {
+        (function(){ 
+        var cityLocalEl = document.createElement('button');
+
+        cityLocalEl.textContent = displayHistory[i];
+        cityLocalEl.classList.add('col-11','list-group-item', 'ms-4');
+        var cityList = displayHistory[i];
+        asideEl.appendChild(cityLocalEl);
+        
+        cityLocalEl.addEventListener('click', function() {
+            getCityInfoByName(cityLocalEl.innerText);
+        })
+    })();
+    };
+}
 
 var searchHandler = function (event) {
     event.preventDefault()
+    console.log('hello')
+    var SearchCities = cityInput.value
+    if (SearchCities) {
+        getUrlName(SearchCities);
+        cityInput.value = SearchCities;
+        localStorage.setItem('city', JSON.stringify(displayHistory));
+    } else {
+      alert('uh oh')
+    }
 };
 
-if (SearchCities) {
-    getUrlName(SearchCities);
-    searchEl.textContent = '';
-    cityInput.value = SearchCities;
-} else {
-    console.log('Please enter a valid city.');
-}
 
 var getUrlName = function (city) {
     var cityRequestUrl = geoCodeWeatherUrl + city + '&appid=' + apiKey;
-
+    console.log(city)
     fetch(cityRequestUrl)
         .then(function (response) {
             if (response.ok) {
@@ -70,25 +94,27 @@ var getUrlName = function (city) {
                     weatherDisplay(data, city);
                 });
             } else {
-                console.log('Error: ' + response.statusText);
+                
             }
         })
         .catch(function (error) {
-            console.log('Unable to find data for this city');
+            console.log('no data found');
         });
 
-    console.log(cityRequestUrl);
+    
 };
+
+
 
 var weatherDisplay = function (weatherData, searchTerm) {
     if (weatherData.length === 0) {
         mainEl.textContent = 'No data found';
         return;
     }
-    var coordinateRequestUrl = openCallWeatherUrl + 'lat=' + lat + '&lon=' + lon + '&appid=' + apiKey + '&units=imperial';
     var lat = weatherData[0].lat
     var lon = weatherData[0].lon
-    
+    var coordinateRequestUrl = openCallWeatherUrl + 'lat=' + lat + '&lon=' + lon + '&appid=' + apiKey + '&units=imperial';
+
     fetch(coordinateRequestUrl)
         .then(function (response) {
             return response.json();
@@ -112,7 +138,6 @@ var weatherDisplay = function (weatherData, searchTerm) {
             uvIndex.textContent = 'UV index: ' + data.current.uvi;
             for (let i = 0; i < 5; i++) {
 
-                // date changed to momentum
                 var dtUnixFormatting = moment.unix(data.daily[i].dt).format('MMMM Do, YYYY');
                 var tempDay = data.daily[i].temp.day;
                 var windSpeed = data.daily[i].wind_speed;
@@ -120,13 +145,10 @@ var weatherDisplay = function (weatherData, searchTerm) {
                 var weatherIcon = data.daily[i].weather[0].icon;
                 var weatherDescription = data.daily[i].weather[0].description
                 var iconSource = 'https://openweathermap.org/img/wn/' + weatherIcon + '@2x.png'
-                // console.log(data.daily[i].weather[0].icon)
-                // console.log(iconSource);
 
                 var card = document.createElement('div');
                 card.classList.add('card-body', 'm-3')
-                fiveDayForecastEl.appendChild(card);
-                console.log(card)
+                fiveDayEl.appendChild(card);
 
                 var dateEl = document.createElement('h5');
                 dateEl.classList.add('card-text');
@@ -146,21 +168,21 @@ var weatherDisplay = function (weatherData, searchTerm) {
                 card.appendChild(tempEl);
                 tempEl.textContent = 'Temp: ' + tempDay;
 
-                var windSpeedEl = document.createElement('p');
-                windSpeedEl.classList.add('card-text', 'lh-lg');
-                card.appendChild(windSpeedEl);
-                windSpeedEl.textContent = 'Wind: '+ windSpeed + ' mph';
+                var windEl = document.createElement('p');
+                windEl.classList.add('card-text', 'lh-lg');
+                card.appendChild(windEl);
+                windEl.textContent = 'Wind: ' + windSpeed + ' mph';
 
-                var humidityEl = document.createElement('p');
-                humidityEl.classList.add('card-text', 'lh-lg');
-                card.appendChild(humidityEl);
-                humidityEl.textContent = 'Humidity: ' + humidity + '%';
+                var humidEl = document.createElement('p');
+                humidEl.classList.add('card-text', 'lh-lg');
+                card.appendChild(humidEl);
+                humidEl.textContent = 'Humidity: ' + humidity + '%';
             }
         })
-        .catch(function (err) {
-            console.log(err);
+        .catch(function (error) {
+            console.log(error);
         });
     return;
 };
-    
+
 searchBtn.addEventListener('click', searchHandler);
